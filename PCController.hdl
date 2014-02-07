@@ -1,0 +1,20 @@
+CHIP PCController {
+    IN  
+        data[16], // Result of ALU computation
+        jmp[3], // Jump bits of CPU instruction
+        type; // The instruction type (a- or c-command) bit of  
+
+    OUT 
+        inc, // Increment PC
+        load; // Load PC
+
+    PARTS:
+    Comparator(in=data, ltz=in-ltz, eqz=in-eqz, gtz=in-gtz);
+    And(a=in-ltz, b=jmp[2], out=jump-ltz);
+    And(a=in-eqz, b=jmp[1], out=jump-eqz);
+    And(a=in-gtz, b=jmp[0], out=jump-gtz);
+    Or(a=jump-ltz, b=jump-eqz, out=jump-ltz-or-eqz);
+    Or(a=jump-ltz-or-eqz, b=jump-gtz, out=jump);
+    And(a=type, b=jump, out=execute-load, out=load);
+    Not(in=execute-load, out=inc);
+}
